@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - DairyPro Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom styles to fix missing classes */
+        .sidebar {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        
+        .sidebar-link {
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        
+        .form-input {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            width: 100%;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -0.25rem;
+            right: -0.25rem;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 1.25rem;
+            height: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background-color: #1f2937;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            z-index: 50;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #e5e7eb;
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #4f46e5;
+            transition: width 0.3s ease;
+        }
+        
+        .report-summary-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .report-summary-card.positive {
+            border-left: 4px solid #10b981;
+        }
+        
+        .report-summary-card.negative {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .report-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        
+        .report-body {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .report-table th {
+            background-color: #f8fafc;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .report-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .report-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .transaction-row:hover {
+            background-color: #f9fafb;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Authentication Check -->
+    <script>
+        if (localStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar Navigation -->
+        <div class="w-64 sidebar text-white flex flex-col fixed h-full z-10">
+            <div class="px-6 py-5 border-b border-blue-700">
+                <h2 class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-cow mr-3 text-blue-200"></i> 
+                    <span class="bg-gradient-to-r from-blue-100 to-blue-200 bg-clip-text text-transparent">DairyPro</span>
+                </h2>
+                <p class="text-blue-200 text-sm mt-1">Management System</p>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-1">
+                <a href="index.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-tachometer-alt"></i> 
+                    <span>Dashboard</span>
+                </a>
+                <a href="farmers.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-users"></i> 
+                    <span>Farmers</span>
+                </a>
+                <a href="delivery.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-truck"></i> 
+                    <span>Record Delivery</span>
+                </a>
+                <a href="debit.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-minus-circle"></i> 
+                    <span>Record Debit</span>
+                </a>
+                <a href="payment.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-money-bill-wave"></i> 
+                    <span>Record Payment</span>
+                </a>
+                <a href="analytics.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-chart-line"></i> 
+                    <span>Analytics</span>
+                </a>
+                <a href="transactions.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-exchange-alt"></i> 
+                    <span>Transactions</span>
+                </a>
+                <a href="reports.html" class="sidebar-link active flex items-center px-4 py-3">
+                    <i class="fas fa-file-alt"></i> 
+                    <span>Reports</span>
+                </a>
+                <a href="profile.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-building"></i> 
+                    <span>Profile</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center px-4 py-3 mt-4" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> 
+                    <span>Logout</span>
+                </a>
+            </nav>
+            <div class="px-6 py-4 border-t border-blue-700 text-sm text-blue-200">
+                <p>© 2025 DairyPro Management</p>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-hidden ml-64">
+            <header class="main-header p-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-file-alt mr-3 text-indigo-500"></i> 
+                        Generate Reports
+                    </h1>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                                <i class="fas fa-bell text-gray-600"></i>
+                                <span class="notification-badge">3</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold">
+                                A
+                            </div>
+                            <span class="ml-2 text-gray-700 font-medium">Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-2xl font-semibold mb-6 flex items-center">
+                        <i class="fas fa-file-alt mr-3 text-indigo-500"></i> 
+                        Generate Farmer Report
+                    </h2>
+                    
+                    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                                <div class="flex space-x-4">
+                                    <div class="flex items-center">
+                                        <input type="radio" id="individual-report" name="report-type" value="individual" checked class="mr-2">
+                                        <label for="individual-report">Individual Farmer</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" id="all-farmers-report" name="report-type" value="all" class="mr-2">
+                                        <label for="all-farmers-report">All Farmers</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Period</label>
+                                <div class="flex space-x-4">
+                                    <div class="flex items-center">
+                                        <input type="radio" id="daily-report" name="report-period" value="daily" checked class="mr-2">
+                                        <label for="daily-report">Daily</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" id="monthly-report" name="report-period" value="monthly" class="mr-2">
+                                        <label for="monthly-report">Monthly</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                            <div id="farmer-select-container">
+                                <label for="report-farmer" class="block text-sm font-medium text-gray-700">Farmer</label>
+                                <select id="report-farmer" class="form-input mt-1 block w-full py-2 px-3" required>
+                                    <option value="">Select Farmer</option>
+                                </select>
+                            </div>
+                            
+                            <div id="date-container">
+                                <label for="report-date" class="block text-sm font-medium text-gray-700">Date</label>
+                                <input type="date" id="report-date" class="form-input mt-1 block w-full py-2 px-3">
+                            </div>
+                            
+                            <div id="month-container" class="hidden">
+                                <label for="report-month" class="block text-sm font-medium text-gray-700">Month</label>
+                                <input type="month" id="report-month" class="form-input mt-1 block w-full py-2 px-3">
+                            </div>
+                            
+                            <div>
+                                <label for="report-language" class="block text-sm font-medium text-gray-700">Language</label>
+                                <select id="report-language" class="form-input mt-1 block w-full py-2 px-3">
+                                    <option value="en">English</option>
+                                    <option value="rw">Kinyarwanda</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Method</label>
+                            <div class="flex space-x-4">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="send-email" name="delivery-method" value="email" checked class="mr-2">
+                                    <label for="send-email">Email</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="send-sms" name="delivery-method" value="sms" class="mr-2">
+                                    <label for="send-sms">SMS</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="print-only" name="delivery-method" value="print" class="mr-2">
+                                    <label for="print-only">Print Only</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex space-x-3">
+                            <button id="generate-report-btn" class="btn btn-primary py-2 px-4">
+                                <i class="fas fa-file-export mr-2"></i> Generate Report
+                            </button>
+                            <button id="send-all-btn" class="btn bg-green-600 text-white py-2 px-4 hidden">
+                                <i class="fas fa-paper-plane mr-2"></i> Send to All Farmers
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="report-container" class="hidden mt-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold" id="report-title">Generated Report</h3>
+                            <div class="flex space-x-2">
+                                <button id="print-report-btn" class="btn bg-gray-100 text-gray-700 py-2 px-4">
+                                    <i class="fas fa-print mr-2"></i> Print
+                                </button>
+                                <button id="send-email-btn" class="btn btn-success py-2 px-4">
+                                    <i class="fas fa-envelope mr-2"></i> Send via Email
+                                </button>
+                                <button id="send-sms-btn" class="btn bg-blue-600 text-white py-2 px-4">
+                                    <i class="fas fa-sms mr-2"></i> Send via SMS
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="report-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <!-- Summary cards will be populated here -->
+                        </div>
+                        
+                        <div id="report-output" class="p-0 rounded-lg border border-gray-300 bg-gray-50 overflow-hidden">
+                            <!-- Report content will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bulk Send Progress Modal -->
+                <div id="bulk-send-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                    <div class="bg-white rounded-xl p-6 w-full max-w-md">
+                        <h3 class="text-xl font-semibold mb-4">Sending Reports to Farmers</h3>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>Progress</span>
+                                <span id="progress-text">0/0</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div id="progress-list" class="max-h-60 overflow-y-auto mb-4">
+                            <!-- Progress items will be added here -->
+                        </div>
+                        <div class="flex justify-end">
+                            <button id="close-progress-modal" class="btn bg-gray-100 text-gray-700 py-2 px-4">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i id="toast-icon" class="fas fa-info-circle mr-2"></i>
+        <span id="toast-message">This is a toast message</span>
+    </div>
+
+    <script src="app.js"></script>
+    
+    <script>
+        // Current report data - this will be managed by app.js
+        // currentReport is already defined in app.js
+
+        function initReports() {
+            // Check if data is available from app.js
+            if (typeof farmers === 'undefined') {
+                console.error('Farmers data not found. Make sure app.js is loaded.');
+                showToast('Error loading farmer data. Please refresh the page.', 'error');
+                return;
+            }
+            
+            populateFarmerDropdowns();
+            setupEventListeners();
+            setCurrentDateFields();
+        }
+
+        function setupEventListeners() {
+            // Report type and period changes
+            document.querySelectorAll('input[name="report-type"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    toggleReportType(this.value);
+                });
+            });
+            
+            document.querySelectorAll('input[name="report-period"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    toggleReportPeriod(this.value);
+                });
+            });
+
+            // Main buttons
+            document.getElementById('generate-report-btn').addEventListener('click', generateReport);
+            document.getElementById('send-all-btn').addEventListener('click', sendReportsToAll);
+            document.getElementById('print-report-btn').addEventListener('click', printReport);
+            document.getElementById('send-email-btn').addEventListener('click', sendReportByEmail);
+            document.getElementById('send-sms-btn').addEventListener('click', sendReportBySMS);
+            document.getElementById('close-progress-modal').addEventListener('click', closeProgressModal);
+        }
+
+        function populateFarmerDropdowns() {
+            const farmerSelect = document.getElementById('report-farmer');
+            if (!farmerSelect) return;
+            
+            farmerSelect.innerHTML = '<option value="">Select Farmer</option>';
+            
+            farmers.forEach(farmer => {
+                const option = document.createElement('option');
+                option.value = farmer.id;
+                option.textContent = farmer.name;
+                farmerSelect.appendChild(option);
+            });
+        }
+
+        function setCurrentDateFields() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateField = document.getElementById('report-date');
+            if (dateField) {
+                dateField.value = today;
+            }
+            
+            const now = new Date();
+            const monthField = document.getElementById('report-month');
+            if (monthField) {
+                monthField.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            }
+        }
+
+        function toggleReportType(type) {
+            const farmerSelectContainer = document.getElementById('farmer-select-container');
+            const sendAllBtn = document.getElementById('send-all-btn');
+            
+            if (!farmerSelectContainer || !sendAllBtn) return;
+            
+            if (type === 'individual') {
+                farmerSelectContainer.classList.remove('hidden');
+                sendAllBtn.classList.add('hidden');
+            } else {
+                farmerSelectContainer.classList.add('hidden');
+                sendAllBtn.classList.remove('hidden');
+            }
+        }
+
+        function toggleReportPeriod(period) {
+            const dateContainer = document.getElementById('date-container');
+            const monthContainer = document.getElementById('month-container');
+            
+            if (!dateContainer || !monthContainer) return;
+            
+            if (period === 'daily') {
+                dateContainer.classList.remove('hidden');
+                monthContainer.classList.add('hidden');
+            } else {
+                dateContainer.classList.add('hidden');
+                monthContainer.classList.remove('hidden');
+            }
+        }
+
+        function generateReport() {
+            const reportType = document.querySelector('input[name="report-type"]:checked').value;
+            const period = document.querySelector('input[name="report-period"]:checked').value;
+            const language = document.getElementById('report-language').value;
+            
+            if (reportType === 'individual') {
+                const farmerId = parseInt(document.getElementById('report-farmer').value);
+                if (!farmerId) {
+                    showToast('Please select a farmer.', 'info');
+                    return;
+                }
+                
+                const farmer = farmers.find(f => f.id === farmerId);
+                if (!farmer) {
+                    showToast('Farmer not found.', 'info');
+                    return;
+                }
+                
+                if (period === 'daily') {
+                    const date = document.getElementById('report-date').value;
+                    if (!date) {
+                        showToast('Please select a date.', 'info');
+                        return;
+                    }
+                    
+                    generateDailyReport(farmer, date, language);
+                } else {
+                    const month = document.getElementById('report-month').value;
+                    if (!month) {
+                        showToast('Please select a month.', 'info');
+                        return;
+                    }
+                    
+                    generateMonthlyReport(farmer, month, language);
+                }
+            } else {
+                // All farmers report
+                if (period === 'daily') {
+                    const date = document.getElementById('report-date').value;
+                    if (!date) {
+                        showToast('Please select a date.', 'info');
+                        return;
+                    }
+                    
+                    generateAllFarmersDailyReport(date, language);
+                } else {
+                    const month = document.getElementById('report-month').value;
+                    if (!month) {
+                        showToast('Please select a month.', 'info');
+                        return;
+                    }
+                    
+                    generateAllFarmersMonthlyReport(month, language);
+                }
+            }
+        }
+
+        function generateDailyReport(farmer, date, language) {
+            const pricePerLitre = settings.pricePerLitre;
+            
+            // Get opening balance (transactions before the selected date)
+            const previousTransactions = [...milkDeliveries, ...farmerDebits, ...farmerPayments]
+                .filter(t => t.farmerId === farmer.id && t.date < date);
+                
+            const openingCredit = previousTransactions
+                .filter(t => t.litresMorning !== undefined)
+                .reduce((sum, d) => sum + ((d.litresMorning || 0) + (d.litresNight || 0)) * pricePerLitre, 0);
+                
+            const openingDebit = previousTransactions
+                .filter(t => t.type === 'supply' || t.type === 'loan')
+                .reduce((sum, d) => sum + d.amount, 0);
+                
+            const openingPayments = previousTransactions
+                .filter(t => t.type === 'payment')
+                .reduce((sum, p) => sum + p.amount, 0);
+
+            const openingBalance = openingCredit - openingDebit - openingPayments;
+            
+            // Get transactions for the selected date
+            const dateTransactions = [...milkDeliveries, ...farmerDebits, ...farmerPayments]
+                .filter(t => t.farmerId === farmer.id && t.date === date)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Calculate daily values
+            const milkDelivery = milkDeliveries.find(d => d.farmerId === farmer.id && d.date === date);
+            const litresMorning = milkDelivery ? milkDelivery.litresMorning : 0;
+            const litresNight = milkDelivery ? milkDelivery.litresNight : 0;
+            const totalLitres = litresMorning + litresNight;
+            const milkValue = totalLitres * pricePerLitre;
+            
+            const dailyDebits = farmerDebits
+                .filter(d => d.farmerId === farmer.id && d.date === date)
+                .reduce((sum, d) => sum + d.amount, 0);
+                
+            const dailyPayments = farmerPayments
+                .filter(p => p.farmerId === farmer.id && p.date === date)
+                .reduce((sum, p) => sum + p.amount, 0);
+            
+            const closingBalance = openingBalance + milkValue - dailyDebits - dailyPayments;
+            
+            // Generate report summary cards
+            const summaryCards = `
+                <div class="report-summary-card p-4 rounded-lg">
+                    <div class="text-sm text-gray-600">Opening Balance</div>
+                    <div class="text-xl font-bold mt-1 ${openingBalance >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(openingBalance)}</div>
+                </div>
+                <div class="report-summary-card p-4 rounded-lg">
+                    <div class="text-sm text-gray-600">Total Litres Today</div>
+                    <div class="text-xl font-bold mt-1 text-blue-600">${formatLitres(totalLitres)}</div>
+                </div>
+                <div class="report-summary-card p-4 rounded-lg ${closingBalance >= 0 ? 'positive' : 'negative'}">
+                    <div class="text-sm text-gray-600">Closing Balance</div>
+                    <div class="text-xl font-bold mt-1 ${closingBalance >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(closingBalance)}</div>
+                </div>
+            `;
+            
+            document.getElementById('report-summary').innerHTML = summaryCards;
+            
+            // Generate detailed report in HTML table format
+            let reportHTML = `
+                <div class="report-header">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h1 class="text-2xl font-bold">${language === 'rw' ? 'RAPORO YUMUHINZI' : 'DAIRY FARMER DAILY REPORT'}</h1>
+                            <p class="text-blue-100 mt-1">${language === 'rw' ? 'Yakozwe ku' : 'Generated on'} ${new Date().toLocaleDateString()}</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="bg-white bg-opacity-20 rounded-lg px-3 py-2 inline-block">
+                                <div class="text-sm">${language === 'rw' ? 'Igiciro cya Litre' : 'Price per Litre'}</div>
+                                <div class="font-bold">${formatCurrency(pricePerLitre)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="report-body">
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-2">${language === 'rw' ? 'Amakuru yumuhinzi' : 'Farmer Information'}</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <div class="text-sm text-gray-500">${language === 'rw' ? 'Izina' : 'Name'}</div>
+                                <div class="font-medium">${farmer.name}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500">${language === 'rw' ? 'Telefone' : 'Phone'}</div>
+                                <div class="font-medium">${farmer.phone || (language === 'rw' ? 'Ntabwo yahagiwe' : 'Not provided')}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500">Email</div>
+                                <div class="font-medium">${farmer.email || (language === 'rw' ? 'Ntabwo yahagiwe' : 'Not provided')}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-2">${language === 'rw' ? 'Incamake yumunsi' : 'Daily Summary'} - ${date}</h2>
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>${language === 'rw' ? 'Ibisobanuro' : 'Description'}</th>
+                                    <th>${language === 'rw' ? 'Mu gitondo (L)' : 'Morning (L)'}</th>
+                                    <th>${language === 'rw' ? 'Nijoro (L)' : 'Evening (L)'}</th>
+                                    <th>${language === 'rw' ? 'Igiteranyo (L)' : 'Total (L)'}</th>
+                                    <th>${language === 'rw' ? 'Agihe (Rwf)' : 'Value (Rwf)'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Amata yoherejwe' : 'Milk Delivery'}</td>
+                                    <td>${formatLitres(litresMorning)}</td>
+                                    <td>${formatLitres(litresNight)}</td>
+                                    <td>${formatLitres(totalLitres)}</td>
+                                    <td>${formatCurrency(milkValue)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-2">${language === 'rw' ? 'Incamake yimari' : 'Financial Summary'}</h2>
+                        <table class="report-table">
+                            <tbody>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Umubare wibanze' : 'Opening Balance'}</td>
+                                    <td class="text-right ${openingBalance >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(openingBalance)}</td>
+                                </tr>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Amafaranga yakiriwe' : 'Milk Credit'}</td>
+                                    <td class="text-right text-green-600">+ ${formatCurrency(milkValue)}</td>
+                                </tr>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Ibiciro byibicuruzwa' : 'Supplies/Debits'}</td>
+                                    <td class="text-right text-red-600">- ${formatCurrency(dailyDebits)}</td>
+                                </tr>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Amafaranga yishyuwe' : 'Payments'}</td>
+                                    <td class="text-right text-red-600">- ${formatCurrency(dailyPayments)}</td>
+                                </tr>
+                                <tr class="font-bold">
+                                    <td>${language === 'rw' ? 'Umubare wasigaye' : 'Closing Balance'}</td>
+                                    <td class="text-right ${closingBalance >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(closingBalance)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+            `;
+            
+            if (dateTransactions.length > 0) {
+                reportHTML += `
+                    <div>
+                        <h2 class="text-lg font-semibold mb-2">${language === 'rw' ? 'Ibisobanuro byibikorwa' : 'Transaction Details'}</h2>
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>${language === 'rw' ? 'Itariki' : 'Date'}</th>
+                                    <th>${language === 'rw' ? 'Ubwoko' : 'Type'}</th>
+                                    <th>${language === 'rw' ? 'Ibisobanuro' : 'Description'}</th>
+                                    <th class="text-right">${language === 'rw' ? 'Amafaranga (Rwf)' : 'Amount (Rwf)'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                dateTransactions.forEach(t => {
+                    let type, description, amount, textColor;
+                    
+                    if (t.litresMorning !== undefined) {
+                        type = language === 'rw' ? 'AMATA' : 'MILK';
+                        const litres = (t.litresMorning || 0) + (t.litresNight || 0);
+                        description = language === 'rw' 
+                            ? `${formatLitres(litres)}L yoherejwe (${formatLitres(t.litresMorning || 0)}M + ${formatLitres(t.litresNight || 0)}E)`
+                            : `${formatLitres(litres)}L delivered (${formatLitres(t.litresMorning || 0)}M + ${formatLitres(t.litresNight || 0)}E)`;
+                        amount = formatCurrency(litres * pricePerLitre);
+                        textColor = 'text-blue-600';
+                    } else if (t.type === 'supply' || t.type === 'loan') {
+                        type = language === 'rw' ? 'IBANZE' : 'DEBIT';
+                        description = t.description;
+                        amount = formatCurrency(-t.amount);
+                        textColor = 'text-red-600';
+                    } else if (t.type === 'payment') {
+                        type = language === 'rw' ? 'ISHYUWE' : 'PAYMENT';
+                        description = language === 'rw' ? 'Amafaranga yishyuwe' : 'Farmer payment';
+                        amount = formatCurrency(-t.amount);
+                        textColor = 'text-red-600';
+                    }
+
+                    reportHTML += `
+                        <tr class="transaction-row">
+                            <td>${t.date}</td>
+                            <td><span class="${textColor}">${type}</span></td>
+                            <td>${description}</td>
+                            <td class="text-right ${textColor}">${amount}</td>
+                        </tr>
+                    `;
+                });
+                
+                reportHTML += `</tbody></table></div>`;
+            }
+            
+            reportHTML += `</div>`;
+            
+            displayReport(reportHTML, language === 'rw' ? 'Raporo Yakozwe' : 'Daily Report Generated', farmer);
+            
+            // Update the global currentReport object from app.js
+            currentReport.text = reportHTML;
+            currentReport.html = reportHTML;
+            currentReport.email = farmer.email;
+            currentReport.phone = farmer.phone;
+            currentReport.subject = language === 'rw' 
+                ? `Raporo ya DairyPro kuri ${farmer.name} - ${date}`
+                : `DairyPro Daily Report for ${farmer.name} - ${date}`;
+        }
+
+        function generateMonthlyReport(farmer, month, language) {
+            const pricePerLitre = settings.pricePerLitre;
+            const [year, monthNum] = month.split('-');
+            const startDate = `${year}-${monthNum}-01`;
+            const endDate = `${year}-${monthNum}-${new Date(year, monthNum, 0).getDate()}`;
+            
+            // Get monthly transactions
+            const monthTransactions = [...milkDeliveries, ...farmerDebits, ...farmerPayments]
+                .filter(t => t.farmerId === farmer.id && t.date >= startDate && t.date <= endDate);
+            
+            const totalLitres = monthTransactions
+                .filter(t => t.litresMorning !== undefined)
+                .reduce((sum, d) => sum + (d.litresMorning || 0) + (d.litresNight || 0), 0);
+                
+            const totalCredit = totalLitres * pricePerLitre;
+            
+            const totalDebits = monthTransactions
+                .filter(t => t.type === 'supply' || t.type === 'loan')
+                .reduce((sum, d) => sum + d.amount, 0);
+                
+            const totalPayments = monthTransactions
+                .filter(t => t.type === 'payment')
+                .reduce((sum, p) => sum + p.amount, 0);
+            
+            const netBalance = totalCredit - totalDebits - totalPayments;
+            
+            // Generate summary cards
+            const summaryCards = `
+                <div class="report-summary-card p-4 rounded-lg">
+                    <div class="text-sm text-gray-600">${language === 'rw' ? 'Amata Yoherejwe' : 'Total Milk Delivered'}</div>
+                    <div class="text-xl font-bold mt-1 text-blue-600">${formatLitres(totalLitres)}</div>
+                </div>
+                <div class="report-summary-card p-4 rounded-lg">
+                    <div class="text-sm text-gray-600">${language === 'rw' ? 'Amafaranga Yakiriwe' : 'Total Credit Earned'}</div>
+                    <div class="text-xl font-bold mt-1 text-green-600">${formatCurrency(totalCredit)}</div>
+                </div>
+                <div class="report-summary-card p-4 rounded-lg ${netBalance >= 0 ? 'positive' : 'negative'}">
+                    <div class="text-sm text-gray-600">${language === 'rw' ? 'Umubare Wasigaye' : 'Net Balance'}</div>
+                    <div class="text-xl font-bold mt-1 ${netBalance >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(netBalance)}</div>
+                </div>
+            `;
+            
+            document.getElementById('report-summary').innerHTML = summaryCards;
+            
+            // Simple monthly report display
+            let reportHTML = `
+                <div class="report-header">
+                    <h1 class="text-2xl font-bold">${language === 'rw' ? 'RAPORO YUKWEZI' : 'MONTHLY REPORT'}</h1>
+                    <p class="text-blue-100 mt-1">${language === 'rw' ? 'Yakozwe ku' : 'Generated on'} ${new Date().toLocaleDateString()}</p>
+                </div>
+                <div class="report-body">
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-2">${language === 'rw' ? 'Amakuru yumuhinzi' : 'Farmer Information'}</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <div class="text-sm text-gray-500">${language === 'rw' ? 'Izina' : 'Name'}</div>
+                                <div class="font-medium">${farmer.name}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500">${language === 'rw' ? 'Telefone' : 'Phone'}</div>
+                                <div class="font-medium">${farmer.phone || (language === 'rw' ? 'Ntabwo yahagiwe' : 'Not provided')}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500">Email</div>
+                                <div class="font-medium">${farmer.email || (language === 'rw' ? 'Ntabwo yahagiwe' : 'Not provided')}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold mb-2">${language === 'rw' ? 'Incamake yukwezi' : 'Monthly Summary'} - ${month}</h2>
+                        <table class="report-table">
+                            <tbody>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Amata yoherejwe' : 'Total Milk Delivered'}</td>
+                                    <td class="text-right">${formatLitres(totalLitres)}</td>
+                                </tr>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Amafaranga yakiriwe' : 'Total Credit Earned'}</td>
+                                    <td class="text-right text-green-600">${formatCurrency(totalCredit)}</td>
+                                </tr>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Ibiciro byibicuruzwa' : 'Total Supplies/Debits'}</td>
+                                    <td class="text-right text-red-600">${formatCurrency(totalDebits)}</td>
+                                </tr>
+                                <tr>
+                                    <td>${language === 'rw' ? 'Amafaranga yishyuwe' : 'Total Payments Made'}</td>
+                                    <td class="text-right text-red-600">${formatCurrency(totalPayments)}</td>
+                                </tr>
+                                <tr class="font-bold">
+                                    <td>${language === 'rw' ? 'Umubare wasigaye' : 'Net Balance'}</td>
+                                    <td class="text-right ${netBalance >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(netBalance)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            displayReport(reportHTML, language === 'rw' ? 'Raporo yUkwezi Yakozwe' : 'Monthly Report Generated', farmer);
+            
+            // Update the global currentReport object from app.js
+            currentReport.text = reportHTML;
+            currentReport.html = reportHTML;
+            currentReport.email = farmer.email;
+            currentReport.phone = farmer.phone;
+            currentReport.subject = language === 'rw' 
+                ? `Raporo yukwezi ya DairyPro kuri ${farmer.name} - ${month}`
+                : `DairyPro Monthly Report for ${farmer.name} - ${month}`;
+        }
+
+        function generateAllFarmersDailyReport(date, language) {
+            let reportHTML = `
+                <div class="report-header">
+                    <h1 class="text-2xl font-bold">${language === 'rw' ? 'RAPORO YABAHINZI BOSE' : 'DAILY REPORT FOR ALL FARMERS'}</h1>
+                    <p class="text-blue-100 mt-1">${date}</p>
+                </div>
+                <div class="report-body">
+                    <h2 class="text-lg font-semibold mb-4">${language === 'rw' ? 'Incamake yabahinzi' : 'Farmer Summaries'}</h2>
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>${language === 'rw' ? 'Izina ryumuhinzi' : 'Farmer Name'}</th>
+                                <th>${language === 'rw' ? 'Mu gitondo (L)' : 'Morning (L)'}</th>
+                                <th>${language === 'rw' ? 'Nijoro (L)' : 'Evening (L)'}</th>
+                                <th>${language === 'rw' ? 'Igiteranyo (L)' : 'Total (L)'}</th>
+                                <th>${language === 'rw' ? 'Agihe (Rwf)' : 'Value (Rwf)'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            farmers.forEach(farmer => {
+                const milkDelivery = milkDeliveries.find(d => d.farmerId === farmer.id && d.date === date);
+                const litresMorning = milkDelivery ? milkDelivery.litresMorning : 0;
+                const litresNight = milkDelivery ? milkDelivery.litresNight : 0;
+                const totalLitres = litresMorning + litresNight;
+                const milkValue = totalLitres * settings.pricePerLitre;
+                
+                reportHTML += `
+                    <tr>
+                        <td>${farmer.name}</td>
+                        <td>${formatLitres(litresMorning)}</td>
+                        <td>${formatLitres(litresNight)}</td>
+                        <td>${formatLitres(totalLitres)}</td>
+                        <td>${formatCurrency(milkValue)}</td>
+                    </tr>
+                `;
+            });
+            
+            reportHTML += `</tbody></table></div>`;
+            
+            displayReport(reportHTML, language === 'rw' ? 'Raporo yabahinzi bose' : 'All Farmers Daily Report');
+            
+            // Update the global currentReport object from app.js
+            currentReport.text = reportHTML;
+            currentReport.html = reportHTML;
+            currentReport.subject = language === 'rw' 
+                ? `Raporo yumunsi yabahinzi bose - ${date}`
+                : `DairyPro Daily Report for All Farmers - ${date}`;
+        }
+
+        function generateAllFarmersMonthlyReport(month, language) {
+            const [year, monthNum] = month.split('-');
+            const startDate = `${year}-${monthNum}-01`;
+            const endDate = `${year}-${monthNum}-${new Date(year, monthNum, 0).getDate()}`;
+            
+            let reportHTML = `
+                <div class="report-header">
+                    <h1 class="text-2xl font-bold">${language === 'rw' ? 'RAPORO YUKWEZI YABAHINZI BOSE' : 'MONTHLY REPORT FOR ALL FARMERS'}</h1>
+                    <p class="text-blue-100 mt-1">${month}</p>
+                </div>
+                <div class="report-body">
+                    <h2 class="text-lg font-semibold mb-4">${language === 'rw' ? 'Incamake yabahinzi' : 'Farmer Summaries'}</h2>
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>${language === 'rw' ? 'Izina ryumuhinzi' : 'Farmer Name'}</th>
+                                <th>${language === 'rw' ? 'Amata yoherejwe (L)' : 'Total Litres'}</th>
+                                <th>${language === 'rw' ? 'Amafaranga (Rwf)' : 'Credit (Rwf)'}</th>
+                                <th>${language === 'rw' ? 'Umubare wasigaye (Rwf)' : 'Net Balance (Rwf)'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            farmers.forEach(farmer => {
+                const monthTransactions = [...milkDeliveries, ...farmerDebits, ...farmerPayments]
+                    .filter(t => t.farmerId === farmer.id && t.date >= startDate && t.date <= endDate);
+                
+                const totalLitres = monthTransactions
+                    .filter(t => t.litresMorning !== undefined)
+                    .reduce((sum, d) => sum + (d.litresMorning || 0) + (d.litresNight || 0), 0);
+                    
+                const totalCredit = totalLitres * settings.pricePerLitre;
+                
+                const totalDebits = monthTransactions
+                    .filter(t => t.type === 'supply' || t.type === 'loan')
+                    .reduce((sum, d) => sum + d.amount, 0);
+                    
+                const totalPayments = monthTransactions
+                    .filter(t => t.type === 'payment')
+                    .reduce((sum, p) => sum + p.amount, 0);
+                
+                const netBalance = totalCredit - totalDebits - totalPayments;
+                
+                reportHTML += `
+                    <tr>
+                        <td>${farmer.name}</td>
+                        <td>${formatLitres(totalLitres)}</td>
+                        <td>${formatCurrency(totalCredit)}</td>
+                        <td class="${netBalance >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(netBalance)}</td>
+                    </tr>
+                `;
+            });
+            
+            reportHTML += `</tbody></table></div>`;
+            
+            displayReport(reportHTML, language === 'rw' ? 'Raporo yukwezi yabahinzi bose' : 'All Farmers Monthly Report');
+            
+            // Update the global currentReport object from app.js
+            currentReport.text = reportHTML;
+            currentReport.html = reportHTML;
+            currentReport.subject = language === 'rw' 
+                ? `Raporo yukwezi yabahinzi bose - ${month}`
+                : `DairyPro Monthly Report for All Farmers - ${month}`;
+        }
+
+        function displayReport(html, title, farmer = null) {
+            document.getElementById('report-output').innerHTML = html;
+            document.getElementById('report-title').textContent = title;
+            document.getElementById('report-container').classList.remove('hidden');
+            
+            // Show/hide send buttons based on delivery method selection and farmer availability
+            const sendEmailChecked = document.getElementById('send-email').checked;
+            const sendSMSChecked = document.getElementById('send-sms').checked;
+            
+            document.getElementById('send-email-btn').classList.toggle('hidden', !sendEmailChecked || !farmer);
+            document.getElementById('send-sms-btn').classList.toggle('hidden', !sendSMSChecked || !farmer);
+            
+            showToast('Report generated successfully!', 'success');
+        }
+
+        function printReport() {
+            const reportContent = document.getElementById('report-output').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>DairyPro Report</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+                            .report-header { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; padding: 1.5rem; border-radius: 0.5rem 0.5rem 0 0; }
+                            .report-body { background-color: white; padding: 1.5rem; border-radius: 0 0 0.5rem 0.5rem; }
+                            .report-table { width: 100%; border-collapse: collapse; }
+                            .report-table th { background-color: #f8fafc; padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; }
+                            .report-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; }
+                            .report-table tr:last-child td { border-bottom: none; }
+                        </style>
+                    </head>
+                    <body>
+                        ${reportContent}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function sendReportByEmail() {
+            if (!currentReport.text) {
+                showToast('Please generate a report first.', 'info');
+                return;
+            }
+
+            if (!currentReport.email) {
+                showToast('No email address available for this farmer.', 'info');
+                return;
+            }
+
+            const mailtoLink = `mailto:${currentReport.email}?subject=${encodeURIComponent(currentReport.subject)}&body=${encodeURIComponent(currentReport.text)}`;
+            window.open(mailtoLink, '_blank');
+            showToast(`Email client opened for: ${currentReport.email}`, 'success');
+        }
+
+        function sendReportBySMS() {
+            if (!currentReport.text) {
+                showToast('Please generate a report first.', 'info');
+                return;
+            }
+            
+            if (!currentReport.phone) {
+                showToast('No phone number available for this farmer.', 'info');
+                return;
+            }
+            
+            showToast(`SMS would be sent to: ${currentReport.phone}`, 'success');
+        }
+
+        function sendReportsToAll() {
+            const period = document.querySelector('input[name="report-period"]:checked').value;
+            const language = document.getElementById('report-language').value;
+            const sendEmail = document.getElementById('send-email').checked;
+            const sendSMS = document.getElementById('send-sms').checked;
+            
+            if (!sendEmail && !sendSMS) {
+                showToast('Please select at least one delivery method.', 'info');
+                return;
+            }
+            
+            showProgressModal();
+            
+            let completed = 0;
+            const total = farmers.length;
+            
+            farmers.forEach((farmer, index) => {
+                setTimeout(() => {
+                    updateProgress(farmer, sendEmail, sendSMS, ++completed, total);
+                    
+                    if (completed === total) {
+                        setTimeout(() => {
+                            showToast(`Reports sent to all ${total} farmers successfully!`, 'success');
+                        }, 500);
+                    }
+                }, index * 800);
+            });
+        }
+
+        function showProgressModal() {
+            const modal = document.getElementById('bulk-send-modal');
+            const progressList = document.getElementById('progress-list');
+            
+            modal.classList.remove('hidden');
+            progressList.innerHTML = '';
+        }
+
+        function updateProgress(farmer, sendEmail, sendSMS, completed, total) {
+            const progressList = document.getElementById('progress-list');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            const progressItem = document.createElement('div');
+            progressItem.className = 'flex items-center mb-2';
+            
+            if (sendEmail) {
+                progressItem.innerHTML = `
+                    <i class="fas fa-envelope text-green-500 mr-2"></i>
+                    <span>Email sent to ${farmer.name}</span>
+                `;
+            } else if (sendSMS) {
+                progressItem.innerHTML = `
+                    <i class="fas fa-sms text-blue-500 mr-2"></i>
+                    <span>SMS sent to ${farmer.name}</span>
+                `;
+            }
+            
+            progressList.appendChild(progressItem);
+            
+            const progressPercent = (completed / total) * 100;
+            progressFill.style.width = `${progressPercent}%`;
+            progressText.textContent = `${completed}/${total}`;
+            
+            progressList.scrollTop = progressList.scrollHeight;
+        }
+
+        function closeProgressModal() {
+            document.getElementById('bulk-send-modal').classList.add('hidden');
+        }
+
+        // The logout function is already defined in app.js
+    </script>
+</body>
+</html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - DairyPro Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --light: #f9fafb;
+            --dark: #1f2937;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .logo-container {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .form-container {
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+        
+        .remember-me input {
+            margin-right: 0.5rem;
+        }
+        
+        .forgot-password {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .divider span {
+            padding: 0 1rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .social-login {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .social-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: white;
+            color: #4b5563;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .social-btn:hover {
+            background: #f9fafb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            max-width: 400px;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast-success {
+            background-color: var(--secondary);
+        }
+        
+        .toast-error {
+            background-color: #ef4444;
+        }
+        
+        .toast-info {
+            background-color: var(--primary);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .language-selector {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        
+        .language-selector select {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            font-size: 0.875rem;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 1rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+            }
+            
+            .logo-container {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* Animation for the logo */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .logo {
+            animation: float 5s ease-in-out infinite;
+        }
+        
+        /* Loading animation for button */
+        .btn-loading {
+            position: relative;
+            color: transparent;
+        }
+        
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: button-loading-spinner 1s ease infinite;
+        }
+        
+        @keyframes button-loading-spinner {
+            from { transform: rotate(0turn); }
+            to { transform: rotate(1turn); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Selector -->
+    <div class="language-selector">
+        <select id="language-select">
+            <option value="en">English</option>
+            <option value="rw">Kinyarwanda</option>
+            <option value="fr">Français</option>
+        </select>
+    </div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="logo-container">
+            <div class="logo">
+                <!-- Zirakamwa Logo -->
+                <img src="zirakamwa.png" alt="Zirakamwa Logo">
+            </div>
+            <h1 class="text-2xl font-bold mt-4">DairyPro Management</h1>
+            <p class="mt-2 opacity-90">Sign in to your account</p>
+        </div>
+        
+        <div class="form-container">
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="relative">
+                        <input type="email" id="email" class="form-input pl-10" placeholder="you@example.com" required>
+                        <i class="fas fa-envelope absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="relative">
+                        <input type="password" id="password" class="form-input pl-10 pr-10" placeholder="••••••••" required>
+                        <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                        <button type="button" id="toggle-password" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="remember-forgot">
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember-me">
+                        <label for="remember-me">Remember me</label>
+                    </div>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="login-btn">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Sign In
+                </button>
+                
+                <div class="divider">
+                    <span>Or continue with</span>
+                </div>
+                
+                <div class="social-login">
+                    <button type="button" class="social-btn">
+                        <i class="fab fa-google text-red-500 mr-2"></i> Google
+                    </button>
+                    <button type="button" class="social-btn">
+                        <i class="fab fa-microsoft text-blue-500 mr-2"></i> Microsoft
+                    </button>
+                </div>
+            </form>
+            
+            <div class="footer">
+                <p>© 2025 DairyPro Management. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i id="toast-icon" class="fas fa-info-circle mr-2"></i>
+        <span id="toast-message">This is a toast message</span>
+    </div>
+
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ✅ ADD THIS: Redirect to dashboard if already authenticated
+        if (localStorage.getItem('isAuthenticated') === 'true') {
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // Password visibility toggle
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+        
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle eye icon and show password text
+            const icon = togglePassword.querySelector('i');
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                // Show password text
+                passwordInput.style.letterSpacing = 'normal';
+                passwordInput.style.fontFamily = 'inherit';
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                // Hide password text
+                passwordInput.style.letterSpacing = '0.1em';
+                passwordInput.style.fontFamily = 'monospace';
+            }
+        });
+        
+        // Language selector
+        const languageSelect = document.getElementById('language-select');
+        languageSelect.addEventListener('change', function() {
+            const selectedLanguage = this.value;
+            updateLanguage(selectedLanguage);
+        });
+        
+        // Form submission
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+            
+            // Show loading state
+            loginBtn.classList.add('btn-loading');
+            loginBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(function() {
+                // Reset loading state
+                loginBtn.classList.remove('btn-loading');
+                loginBtn.disabled = false;
+                
+                // Simple validation
+                if (email && password) {
+                    if (email === 'murwanashyakadieumerci540@gmail.com' && password === 'shyaka@123') {
+                        showToast('Login successful! Redirecting...', 'success');
+                        
+                        // ✅ CRITICAL FIX: Set authentication state
+                        localStorage.setItem('isAuthenticated', 'true');
+                        localStorage.setItem('username', email);
+                        localStorage.setItem('userEmail', email);
+                        
+                        // Redirect to dashboard after a delay
+                        setTimeout(function() {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        showToast('Invalid email or password. Please try again.', 'error');
+                    }
+                } else {
+                    showToast('Please fill in all fields.', 'info');
+                }
+            }, 1500);
+        });
+        
+        // Forgot password link
+        document.querySelector('.forgot-password').addEventListener('click', function(e) {
+            e.preventDefault();
+            showToast('Password reset link has been sent to your email.', 'info');
+        });
+        
+        // Social login buttons
+        document.querySelectorAll('.social-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const provider = this.textContent.trim();
+                showToast(`Sign in with ${provider} is not implemented in this demo.`, 'info');
+            });
+        });
+        
+        // Initialize password field with proper styling
+        passwordInput.style.letterSpacing = '0.1em';
+        passwordInput.style.fontFamily = 'monospace';
+    });
+    
+    function updateLanguage(language) {
+        // In a real application, this would update all text content based on the selected language
+        const translations = {
+            en: {
+                title: 'Sign in to your account',
+                email: 'Email Address',
+                password: 'Password',
+                remember: 'Remember me',
+                forgot: 'Forgot password?',
+                signin: 'Sign In',
+                or: 'Or continue with',
+                footer: '© 2025 DairyPro Management. All rights reserved.'
+            },
+            rw: {
+                title: 'Injira muri konti yawe',
+                email: 'Imeyili',
+                password: 'Ijambobanga',
+                remember: 'Nyibuka',
+                forgot: 'Wibagiwe ijambobanga?',
+                signin: 'Injira',
+                or: 'Cyangwa komeza ukoresheje',
+                footer: '© 2025 DairyPro Management. Amahoro yose ni ayayo.'
+            },
+            fr: {
+                title: 'Connectez-vous à votre compte',
+                email: 'Adresse e-mail',
+                password: 'Mot de passe',
+                remember: 'Se souvenir de moi',
+                forgot: 'Mot de passe oublié?',
+                signin: 'Se connecter',
+                or: 'Ou continuer avec',
+                footer: '© 2025 DairyPro Management. Tous droits réservés.'
+            }
+        };
+        
+        const t = translations[language];
+        
+        document.querySelector('.logo-container p').textContent = t.title;
+        document.querySelector('label[for="email"]').textContent = t.email;
+        document.querySelector('label[for="password"]').textContent = t.password;
+        document.querySelector('.remember-me label').textContent = t.remember;
+        document.querySelector('.forgot-password').textContent = t.forgot;
+        document.getElementById('login-btn').innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> ${t.signin}`;
+        document.querySelector('.divider span').textContent = t.or;
+        document.querySelector('.footer p').textContent = t.footer;
+        
+        // Update placeholders
+        document.getElementById('email').placeholder = language === 'en' ? 'you@example.com' : 
+                                                      language === 'rw' ? 'wowe@example.com' : 'vous@exemple.com';
+        document.getElementById('password').placeholder = language === 'en' ? '••••••••' : '••••••••';
+    }
+    
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toast-icon');
+        const toastMessage = document.getElementById('toast-message');
+        
+        // Set icon based on type
+        let iconClass = 'fa-info-circle';
+        if (type === 'success') iconClass = 'fa-check-circle';
+        if (type === 'error') iconClass = 'fa-exclamation-circle';
+        if (type === 'warning') iconClass = 'fa-exclamation-triangle';
+        
+        toastIcon.className = `fas ${iconClass} mr-2`;
+        
+        // Set message and type
+        toastMessage.textContent = message;
+        toast.className = `toast toast-${type}`;
+        
+        // Show toast
+        toast.classList.add('show');
+        
+        // Hide after 5 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 5000);
+    }
+</script>
+</body>
+</html>

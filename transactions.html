@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - DairyPro Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-dark: #4338ca;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --light: #f9fafb;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        /* Enhanced sidebar styles */
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-link { 
+            transition: all 0.3s ease; 
+            border-radius: 8px;
+            margin: 4px 0;
+        }
+        
+        .sidebar-link.active, .sidebar-link:hover { 
+            background-color: rgba(255, 255, 255, 0.15); 
+            color: white;
+            transform: translateX(4px);
+        }
+        
+        .sidebar-link i { 
+            margin-right: 0.75rem; 
+            width: 20px;
+            text-align: center;
+        }
+        
+        .modal { display: none; }
+        
+        /* Card hover effects */
+        .summary-card { 
+            transition: transform 0.3s ease, box-shadow 0.3s ease; 
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .summary-card:hover { 
+            transform: translateY(-6px); 
+            box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.15); 
+        }
+        
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+        
+        .card-blue::before { background-color: var(--info); }
+        .card-green::before { background-color: var(--secondary); }
+        .card-red::before { background-color: var(--danger); }
+        .card-purple::before { background-color: var(--primary); }
+        
+        /* Table enhancements */
+        table { 
+            border-collapse: separate; 
+            border-spacing: 0; 
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th, td { 
+            border-bottom: 1px solid #e5e7eb; 
+            padding: 1rem;
+        }
+        
+        th { 
+            background-color: #f8fafc; 
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        tr:last-child td { border-bottom: none; }
+        
+        /* Button styles */
+        .btn { 
+            transition: all 0.2s ease; 
+            border-radius: 8px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary { 
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover { 
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-success { 
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-success:hover { 
+            background-color: #0da271;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-danger { 
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover { 
+            background-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-info { 
+            background-color: var(--info);
+            color: white;
+        }
+        
+        .btn-info:hover { 
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Input focus styles */
+        .form-input {
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+        
+        /* Header with gradient */
+        .main-header {
+            background: linear-gradient(90deg, white 0%, #f8fafc 100%);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        /* Notification badge */
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Search bar styles */
+        .search-container {
+            position: relative;
+        }
+        
+        .search-input {
+            padding-left: 2.5rem;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar Navigation -->
+        <div class="w-64 sidebar text-white flex flex-col fixed h-full z-10">
+            <div class="px-6 py-5 border-b border-blue-700">
+                <h2 class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-cow mr-3 text-blue-200"></i> 
+                    <span class="bg-gradient-to-r from-blue-100 to-blue-200 bg-clip-text text-transparent">DairyPro</span>
+                </h2>
+                <p class="text-blue-200 text-sm mt-1">Management System</p>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-1">
+                <a href="index.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-tachometer-alt"></i> 
+                    <span>Dashboard</span>
+                </a>
+                <a href="farmers.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-users"></i> 
+                    <span>Farmers</span>
+                </a>
+                <a href="delivery.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-truck"></i> 
+                    <span>Record Delivery</span>
+                </a>
+                <a href="debit.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-minus-circle"></i> 
+                    <span>Record Debit</span>
+                </a>
+                <a href="payment.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-money-bill-wave"></i> 
+                    <span>Record Payment</span>
+                </a>
+                <a href="analytics.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-chart-line"></i> 
+                    <span>Analytics</span>
+                </a>
+                <a href="transactions.html" class="sidebar-link active flex items-center px-4 py-3">
+                    <i class="fas fa-exchange-alt"></i> 
+                    <span>Transactions</span>
+                </a>
+                <a href="reports.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-file-alt"></i> 
+                    <span>Reports</span>
+                </a>
+                <a href="profile.html" class="sidebar-link flex items-center px-4 py-3">
+                    <i class="fas fa-building"></i> 
+                    <span>Profile</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center px-4 py-3 mt-4" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> 
+                    <span>Logout</span>
+                </a>
+            </nav>
+            <div class="px-6 py-4 border-t border-blue-700 text-sm text-blue-200">
+                <p>© 2025 DairyPro Management</p>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-hidden ml-64">
+            <header class="main-header p-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-exchange-alt mr-3 text-indigo-500"></i> 
+                        All Transactions
+                    </h1>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                                <i class="fas fa-bell text-gray-600"></i>
+                                <span class="notification-badge">3</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold">
+                                A
+                            </div>
+                            <span class="ml-2 text-gray-700 font-medium">Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-semibold flex items-center">
+                            <i class="fas fa-exchange-alt mr-3 text-indigo-500"></i> 
+                            All Transactions
+                        </h2>
+                        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                            <!-- Search Bar -->
+                            <div class="search-container relative">
+                                <input type="text" id="search-input" placeholder="Search transactions..." class="form-input search-input w-full md:w-64 py-2 px-4 pl-10">
+                                <i class="fas fa-search search-icon"></i>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="openFilterModal()" class="btn bg-gray-100 text-gray-700 py-2 px-4 hover:bg-gray-200">
+                                    <i class="fas fa-filter mr-2"></i> Filter
+                                </button>
+                                <button onclick="exportTransactions()" class="btn bg-gray-100 text-gray-700 py-2 px-4 hover:bg-gray-200">
+                                    <i class="fas fa-download mr-2"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Filters Display -->
+                    <div id="active-filters" class="mb-4 flex flex-wrap gap-2 hidden">
+                        <!-- Active filters will be displayed here -->
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="p-4 font-semibold text-left">Date</th>
+                                    <th class="p-4 font-semibold text-left">Farmer</th>
+                                    <th class="p-4 font-semibold text-left">Type</th>
+                                    <th class="p-4 font-semibold text-left">Description</th>
+                                    <th class="p-4 font-semibold text-right">Amount (Rwf)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-body" class="divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                    <div id="no-results" class="hidden text-center p-6 text-gray-500">
+                        <i class="fas fa-search text-4xl mb-2 text-gray-300"></i>
+                        <p class="text-lg">No transactions found matching your criteria</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div id="filter-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-20" style="display: none;">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-11/12 max-w-md transform transition-all">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-filter mr-3 text-indigo-500"></i> 
+                Filter Transactions
+            </h2>
+            <form id="filter-form" class="space-y-6">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Transaction Type</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="type" value="all" class="form-checkbox text-indigo-600" checked>
+                            <span class="ml-2">All Types</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="type" value="credit" class="form-checkbox text-indigo-600" checked>
+                            <span class="ml-2">Milk Delivery (Credit)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="type" value="debit" class="form-checkbox text-indigo-600" checked>
+                            <span class="ml-2">Debits/Loans</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="type" value="payment" class="form-checkbox text-indigo-600" checked>
+                            <span class="ml-2">Payments</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label for="filter-farmer" class="block text-gray-700 font-medium mb-2">Farmer</label>
+                    <select id="filter-farmer" class="form-input w-full px-4 py-3">
+                        <option value="all">All Farmers</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="start-date" class="block text-gray-700 font-medium mb-2">Start Date</label>
+                        <input type="date" id="start-date" class="form-input w-full px-4 py-3">
+                    </div>
+                    <div>
+                        <label for="end-date" class="block text-gray-700 font-medium mb-2">End Date</label>
+                        <input type="date" id="end-date" class="form-input w-full px-4 py-3">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-4 mt-6">
+                    <button type="button" onclick="clearFilters()" class="btn bg-gray-100 text-gray-700 py-2 px-6 hover:bg-gray-200">Clear All</button>
+                    <button type="button" onclick="applyFilters()" class="btn btn-primary py-2 px-6">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- STATE MANAGEMENT ---
+        let farmers = JSON.parse(localStorage.getItem('farmers')) || [];
+        let milkDeliveries = JSON.parse(localStorage.getItem('milkDeliveries')) || [];
+        let farmerDebits = JSON.parse(localStorage.getItem('farmerDebits')) || [];
+        let farmerPayments = JSON.parse(localStorage.getItem('farmerPayments')) || []; 
+        let settings = JSON.parse(localStorage.getItem('settings')) || { pricePerLitre: 300 };
+        let companyProfile = JSON.parse(localStorage.getItem('companyProfile')) || {
+            name: 'My Dairy Business',
+            address: '123 Milk Lane, Farmtown',
+            phone: '555-MILK-NOW',
+            email: 'contact@mydairy.com'
+        };
+
+        // Current filter state
+        let currentFilters = {
+            types: ['credit', 'debit', 'payment'],
+            farmer: 'all',
+            startDate: '',
+            endDate: '',
+            searchTerm: ''
+        };
+
+        // --- INITIALIZATION & DATA PERSISTENCE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check authentication
+            if (localStorage.getItem('isAuthenticated') !== 'true') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Add sample data if empty
+            if (farmers.length === 0) {
+                initializeSampleData();
+            }
+            
+            initTransactions();
+        });
+
+        function initializeSampleData() {
+            farmers = [
+                { id: 1, name: 'John Musole', email: 'john.musole@example.com', phone: '078-010-1010' },
+                { id: 2, name: 'Aline Zawadi', email: 'aline.zawadi@example.com', phone: '078-010-2020' }
+            ];
+            milkDeliveries = [
+                { id: 1, farmerId: 1, litresMorning: 25, litresNight: 25, date: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0] },
+                { id: 2, farmerId: 2, litresMorning: 40, litresNight: 35, date: new Date(new Date().setDate(new Date().getDate() - 6)).toISOString().split('T')[0] },
+                { id: 3, farmerId: 1, litresMorning: 30, litresNight: 25, date: new Date(new Date().setDate(new Date().getDate() - 2)).toISOString().split('T')[0] },
+                { id: 4, farmerId: 2, litresMorning: 50, litresNight: 50, date: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0] },
+                { id: 5, farmerId: 1, litresMorning: 20, litresNight: 20, date: new Date().toISOString().split('T')[0] }
+            ];
+            farmerDebits = [
+                { id: 1, farmerId: 1, type: 'supply', description: 'Salt for cows', amount: 25000, date: new Date(new Date().getFullYear(), new Date().getMonth(), 15).toISOString().split('T')[0] },
+                { id: 2, farmerId: 2, type: 'loan', description: 'Cash advance', amount: 100000, date: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 10).toISOString().split('T')[0] }
+            ];
+            farmerPayments = [
+                { id: 1, farmerId: 1, type: 'payment', description: 'Partial month settlement', amount: 15000, date: new Date(new Date().getFullYear(), new Date().getMonth(), 20).toISOString().split('T')[0] }
+            ];
+            saveAllData();
+        }
+        
+        function saveAllData() {
+            localStorage.setItem('farmers', JSON.stringify(farmers));
+            localStorage.setItem('milkDeliveries', JSON.stringify(milkDeliveries));
+            localStorage.setItem('farmerDebits', JSON.stringify(farmerDebits));
+            localStorage.setItem('farmerPayments', JSON.stringify(farmerPayments));
+            localStorage.setItem('settings', JSON.stringify(settings));
+            localStorage.setItem('companyProfile', JSON.stringify(companyProfile));
+        }
+        
+        // --- UTILITIES ---
+        function formatCurrency(amount) {
+            const sign = amount < 0 ? '-' : '';
+            const absAmount = Math.abs(amount);
+            return `${sign}${new Intl.NumberFormat('en-US').format(absAmount)} Rwf`;
+        }
+        
+        function formatLitres(litres) {
+            return new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(litres);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-x-full ${type === 'success' ? 'bg-green-500' : 'bg-blue-500'} text-white`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 10);
+            
+            // Remove after delay
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        function logout() {
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // --- TRANSACTIONS FUNCTIONALITY ---
+        function initTransactions() {
+            populateFarmerFilter();
+            setupEventListeners();
+            renderTransactionsTable();
+        }
+
+        function setupEventListeners() {
+            // Search functionality
+            document.getElementById('search-input').addEventListener('input', function(e) {
+                currentFilters.searchTerm = e.target.value.toLowerCase();
+                renderTransactionsTable();
+            });
+
+            // Type filter checkboxes
+            document.querySelectorAll('input[name="type"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.value === 'all') {
+                        // If "All Types" is checked, check all others
+                        if (this.checked) {
+                            document.querySelectorAll('input[name="type"]').forEach(cb => {
+                                if (cb.value !== 'all') cb.checked = true;
+                            });
+                        }
+                    } else {
+                        // If any individual type is unchecked, uncheck "All Types"
+                        if (!this.checked) {
+                            document.querySelector('input[name="type"][value="all"]').checked = false;
+                        }
+                    }
+                });
+            });
+        }
+
+        function populateFarmerFilter() {
+            const filterFarmer = document.getElementById('filter-farmer');
+            filterFarmer.innerHTML = '<option value="all">All Farmers</option>';
+            farmers.forEach(f => {
+                filterFarmer.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+            });
+        }
+
+        function getAllTransactions() {
+            const deliveryTransactions = milkDeliveries.map(d => {
+                const farmer = farmers.find(f => f.id === d.farmerId);
+                const totalLitres = (d.litresMorning || 0) + (d.litresNight || 0);
+                return {
+                    date: d.date,
+                    farmerName: farmer ? farmer.name : 'Unknown',
+                    farmerId: d.farmerId,
+                    type: 'credit',
+                    typeLabel: 'Milk Delivery',
+                    description: `${totalLitres.toFixed(2)}L Milk Delivery`,
+                    amount: totalLitres * settings.pricePerLitre,
+                    id: d.id 
+                };
+            });
+
+            const debitTransactions = farmerDebits.map(d => {
+                const farmer = farmers.find(f => f.id === d.farmerId);
+                return {
+                    date: d.date,
+                    farmerName: farmer ? farmer.name : 'Unknown',
+                    farmerId: d.farmerId,
+                    type: 'debit',
+                    typeLabel: d.type.charAt(0).toUpperCase() + d.type.slice(1),
+                    description: `${d.description}`,
+                    amount: -d.amount,
+                    id: d.id
+                };
+            });
+            
+            const paymentTransactions = farmerPayments.map(p => {
+                const farmer = farmers.find(f => f.id === p.farmerId);
+                return {
+                    date: p.date,
+                    farmerName: farmer ? farmer.name : 'Unknown',
+                    farmerId: p.farmerId,
+                    type: 'payment',
+                    typeLabel: 'Payment',
+                    description: `${p.description || 'Settlement'}`,
+                    amount: -p.amount,
+                    id: p.id
+                };
+            });
+
+            return [...deliveryTransactions, ...debitTransactions, ...paymentTransactions];
+        }
+
+        function filterTransactions(transactions) {
+            return transactions.filter(t => {
+                // Filter by type
+                if (!currentFilters.types.includes(t.type)) return false;
+
+                // Filter by farmer
+                if (currentFilters.farmer !== 'all' && t.farmerId !== parseInt(currentFilters.farmer)) return false;
+
+                // Filter by date range
+                if (currentFilters.startDate && t.date < currentFilters.startDate) return false;
+                if (currentFilters.endDate && t.date > currentFilters.endDate) return false;
+
+                // Filter by search term
+                if (currentFilters.searchTerm) {
+                    const searchLower = currentFilters.searchTerm.toLowerCase();
+                    const matchesFarmer = t.farmerName.toLowerCase().includes(searchLower);
+                    const matchesDescription = t.description.toLowerCase().includes(searchLower);
+                    const matchesType = t.typeLabel.toLowerCase().includes(searchLower);
+                    if (!matchesFarmer && !matchesDescription && !matchesType) return false;
+                }
+
+                return true;
+            });
+        }
+
+        function renderTransactionsTable() {
+            const tableBody = document.getElementById('transactions-table-body');
+            const noResults = document.getElementById('no-results');
+            const activeFilters = document.getElementById('active-filters');
+
+            let allTransactions = getAllTransactions();
+            allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
+
+            const filteredTransactions = filterTransactions(allTransactions);
+
+            tableBody.innerHTML = '';
+            noResults.classList.add('hidden');
+
+            if (filteredTransactions.length === 0) {
+                tableBody.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            filteredTransactions.forEach(t => {
+                const row = tableBody.insertRow();
+                let amountColor = 'text-gray-800';
+                if (t.type === 'credit') amountColor = 'text-green-600';
+                if (t.type === 'debit') amountColor = 'text-red-600';
+                if (t.type === 'payment') amountColor = 'text-blue-600';
+
+                let typeBadge = '';
+                if (t.type === 'credit') typeBadge = 'bg-green-100 text-green-800';
+                if (t.type === 'debit') typeBadge = 'bg-red-100 text-red-800';
+                if (t.type === 'payment') typeBadge = 'bg-blue-100 text-blue-800';
+                
+                row.innerHTML = `
+                    <td class="p-4">${t.date}</td>
+                    <td class="p-4 font-medium">${t.farmerName}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${typeBadge}">
+                            ${t.typeLabel}
+                        </span>
+                    </td>
+                    <td class="p-4">${t.description}</td>
+                    <td class="p-4 text-right font-semibold ${amountColor}">${formatCurrency(t.amount)}</td>
+                `;
+            });
+
+            // Update active filters display
+            updateActiveFiltersDisplay();
+        }
+
+        function updateActiveFiltersDisplay() {
+            const activeFilters = document.getElementById('active-filters');
+            activeFilters.innerHTML = '';
+
+            let hasActiveFilters = false;
+
+            // Type filters
+            if (currentFilters.types.length < 3) {
+                hasActiveFilters = true;
+                const typesText = currentFilters.types.map(type => {
+                    if (type === 'credit') return 'Milk Delivery';
+                    if (type === 'debit') return 'Debits';
+                    if (type === 'payment') return 'Payments';
+                    return type;
+                }).join(', ');
+                
+                activeFilters.innerHTML += `
+                    <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+                        <span>Types: ${typesText}</span>
+                        <button onclick="removeTypeFilter()" class="ml-2 text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            // Farmer filter
+            if (currentFilters.farmer !== 'all') {
+                hasActiveFilters = true;
+                const farmer = farmers.find(f => f.id === parseInt(currentFilters.farmer));
+                activeFilters.innerHTML += `
+                    <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center">
+                        <span>Farmer: ${farmer ? farmer.name : 'Unknown'}</span>
+                        <button onclick="removeFarmerFilter()" class="ml-2 text-green-600 hover:text-green-800">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            // Date filters
+            if (currentFilters.startDate || currentFilters.endDate) {
+                hasActiveFilters = true;
+                const dateText = `${currentFilters.startDate || 'Any'} to ${currentFilters.endDate || 'Any'}`;
+                activeFilters.innerHTML += `
+                    <div class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center">
+                        <span>Date: ${dateText}</span>
+                        <button onclick="removeDateFilter()" class="ml-2 text-purple-600 hover:text-purple-800">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            // Search filter
+            if (currentFilters.searchTerm) {
+                hasActiveFilters = true;
+                activeFilters.innerHTML += `
+                    <div class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm flex items-center">
+                        <span>Search: "${currentFilters.searchTerm}"</span>
+                        <button onclick="removeSearchFilter()" class="ml-2 text-orange-600 hover:text-orange-800">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (hasActiveFilters) {
+                activeFilters.classList.remove('hidden');
+            } else {
+                activeFilters.classList.add('hidden');
+            }
+        }
+
+        // --- FILTER FUNCTIONS ---
+        function openFilterModal() {
+            // Set current values in modal
+            document.querySelectorAll('input[name="type"]').forEach(checkbox => {
+                if (checkbox.value === 'all') {
+                    checkbox.checked = currentFilters.types.length === 3;
+                } else {
+                    checkbox.checked = currentFilters.types.includes(checkbox.value);
+                }
+            });
+
+            document.getElementById('filter-farmer').value = currentFilters.farmer;
+            document.getElementById('start-date').value = currentFilters.startDate;
+            document.getElementById('end-date').value = currentFilters.endDate;
+
+            document.getElementById('filter-modal').style.display = 'flex';
+        }
+
+        function applyFilters() {
+            // Get selected types
+            const selectedTypes = [];
+            document.querySelectorAll('input[name="type"]:checked').forEach(checkbox => {
+                if (checkbox.value !== 'all') {
+                    selectedTypes.push(checkbox.value);
+                }
+            });
+
+            currentFilters.types = selectedTypes.length > 0 ? selectedTypes : ['credit', 'debit', 'payment'];
+            currentFilters.farmer = document.getElementById('filter-farmer').value;
+            currentFilters.startDate = document.getElementById('start-date').value;
+            currentFilters.endDate = document.getElementById('end-date').value;
+
+            closeModal('filter-modal');
+            renderTransactionsTable();
+            showToast('Filters applied successfully', 'success');
+        }
+
+        function clearFilters() {
+            currentFilters = {
+                types: ['credit', 'debit', 'payment'],
+                farmer: 'all',
+                startDate: '',
+                endDate: '',
+                searchTerm: document.getElementById('search-input').value // Keep search term
+            };
+
+            document.getElementById('search-input').value = currentFilters.searchTerm;
+            closeModal('filter-modal');
+            renderTransactionsTable();
+            showToast('All filters cleared', 'success');
+        }
+
+        function removeTypeFilter() {
+            currentFilters.types = ['credit', 'debit', 'payment'];
+            renderTransactionsTable();
+        }
+
+        function removeFarmerFilter() {
+            currentFilters.farmer = 'all';
+            renderTransactionsTable();
+        }
+
+        function removeDateFilter() {
+            currentFilters.startDate = '';
+            currentFilters.endDate = '';
+            renderTransactionsTable();
+        }
+
+        function removeSearchFilter() {
+            currentFilters.searchTerm = '';
+            document.getElementById('search-input').value = '';
+            renderTransactionsTable();
+        }
+
+        // --- EXPORT FUNCTIONALITY ---
+        function exportTransactions() {
+            let allTransactions = getAllTransactions();
+            allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
+            
+            const filteredTransactions = filterTransactions(allTransactions);
+
+            if (filteredTransactions.length === 0) {
+                showToast('No transactions to export', 'info');
+                return;
+            }
+
+            // Create CSV content
+            let csvContent = "Date,Farmer,Type,Description,Amount (Rwf)\n";
+            
+            filteredTransactions.forEach(t => {
+                const row = [
+                    t.date,
+                    `"${t.farmerName}"`,
+                    t.typeLabel,
+                    `"${t.description}"`,
+                    t.amount
+                ];
+                csvContent += row.join(',') + '\n';
+            });
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `transactions_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast(`Exported ${filteredTransactions.length} transactions successfully`, 'success');
+        }
+    </script>
+</body>
+</html>
